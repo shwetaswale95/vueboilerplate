@@ -1,62 +1,36 @@
 <template>
   <nav>
-    <v-app-bar color="red" dark app>
+    <v-app-bar dark app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title class="text-uppercase">
-      <span>Vue BoilerPlate</span>
+      <span>Admin Template</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <!-- <v-btn id="menu-activator" >
-        <img src="https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortFlat&accessoriesType=Sunglasses&hairColor=Black&facialHairType=Blank&clotheType=CollarSweater&clotheColor=Black&eyeType=Default&eyebrowType=Default&mouthType=Smile&skinColor=Light" />
-      </v-btn> -->
-
-      <v-btn id="menu-activator"
-        class="ma-2"
-        color="indigo"
-        icon="mdi-cloud-upload"
-      ></v-btn>
+      <div id="menu-activator" class="cursor-pointer">
+        <v-avatar>
+          <img src="https://cdn.vuetifyjs.com/images/john.jpg"
+              alt="John">
+        </v-avatar>
+        <span class="mx-4"> username</span>
+      </div>
     <v-menu activator="#menu-activator">
       <v-list>
         <v-list-item
-          v-for="(item, index) in links"
+          v-for="(item, index) in drpdownMenu"
           :key="index"
           :value="index"
+          router :to="item.route"
         >
+        <template v-slot:prepend>
+              <v-icon :icon="item.icon"></v-icon>
+            </template>
           <v-list-item-title>{{ item.text }}</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-menu>
-      <!-- <v-menu offset-y>
-        <template v-slot:activator="{on}">
-          <v-btn text v-on="on">
-            <v-icon left>expand_more</v-icon>
-            <span>Menu</span>
-          </v-btn>
-        </template>
-        <v-list flat>
-          <v-list-item v-for="link in links"  :key="link.text" router :to="link.route" active-class="border">
-            <v-list-item-title >{{link.text}}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu> -->
-      <!-- <v-btn text>
-        <span>Exit</span>
-        <v-icon right>exit_to_app</v-icon>
-      </v-btn> -->
     </v-app-bar>
      <v-navigation-drawer  v-model="drawer" dark app class="red darken-4">
-      <v-layout column align-center>
-            <v-flex class="mt-5"> 
-                <v-avatar size="100">
-                        <img src="/img1.png" alt="">
-                </v-avatar>
-                <p class="white--text subheading mt-1 text-center">Username</p>
-            </v-flex>
-            <v-flex class="mt-4 mb-4">
-            <Popup />
-            </v-flex>
-      </v-layout>
-      <v-list flat>
+      <v-list dense>
           <v-list-item v-for="link in links"  :key="link.text" router :to="link.route" active-class="border">
             <template v-slot:prepend>
               <v-icon :icon="link.icon"></v-icon>
@@ -71,19 +45,26 @@
   </nav>
 </template>
 <script>
-import Popup from "./Popup.vue";
+import SvgIcon from '@jamescoyle/vue-icon';
+import { Login } from '@/components/Login';
 export default {
-  data: () => ({
+  components: {
+		SvgIcon,
+    Login
+	},
+  data: () => (
+    {
     drawer: true,
     links :[
-      {icon: "mdi-clock", text:"Dashboard", route: "/"},
-      {icon: "folder", text:"My Project", route: "/projects"},
-      {icon: "person", text:"Team", route: "/team"}
+      {icon: "mdi-view-dashboard", text:"Dashboard", route: "/"},
+      {icon: "mdi-information", text:"About", route: "/projects"},
+    ],
+    drpdownMenu :[
+      {icon: "mdi-account", text:"Profile", route: "/"},
+      {icon: "mdi-cog", text:"Settings", route: "/projects"},
+      {icon: "mdi-logout", text:"Logout", route: "/login"}
     ]
   }),
-  components: {
-    Popup
-  },
 }
 </script>
 <style scoped>

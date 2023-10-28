@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
-// import HomeView from "../views/HomeView.vue";
 import Dashboard from "../views/Dashboard.vue";
 import Projects from "../views/Projects.vue";
-import Team from "../views/Team.vue";
+import Login from "../components/Login.vue"
 
 const routes = [
   {
@@ -16,9 +15,12 @@ const routes = [
     component: Projects,
   },
   {
-    path: "/team",
-    name: "team",
-    component: Team,
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: {
+      allowAnonymous: true
+    }
   },
 ];
 
