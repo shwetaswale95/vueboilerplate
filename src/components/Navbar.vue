@@ -46,11 +46,9 @@
 </template>
 <script>
 import SvgIcon from '@jamescoyle/vue-icon';
-import { Login } from '@/components/Login';
 export default {
   components: {
-		SvgIcon,
-    Login
+		SvgIcon
 	},
   data: () => (
     {
