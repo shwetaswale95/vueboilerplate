@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Dashboard from "../views/Dashboard.vue";
 import Projects from "../views/Projects.vue";
-import Login from "../components/Login.vue"
+import Login from "../components/Login.vue";
+import Signup from "../components/Signup.vue";
 
 const routes = [
   {
@@ -18,6 +19,14 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login,
+    meta: {
+      allowAnonymous: true
+    }
+  },
+  {
+    path: '/signup',
+    name: 'signup',
+    component: Signup,
     meta: {
       allowAnonymous: true
     }

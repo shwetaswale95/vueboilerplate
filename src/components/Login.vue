@@ -4,7 +4,7 @@
       <v-container>
         <v-card :loading="loading" class="mx-auto my-12" max-width="374">
           <v-img class="mt-4" height="180" src="../assets/logo.svg"></v-img>
-          <v-card-title>Login</v-card-title>
+          <v-card-title class="text-center">Login</v-card-title>
           <v-card-text> 
             <v-form>
               <v-text-field
@@ -31,6 +31,10 @@
           <v-card-actions>
           <v-btn block color="primary" @click="login" :loading="loading">Login</v-btn>
           </v-card-actions>
+          <div class="d-flex justify-space-between align-center mx-3">
+             <v-card-title class="text-overline">New user?</v-card-title>
+          <v-btn color="primary" @click="signup" :loading="loading">Signup</v-btn>
+          </div>
         </v-card>
       </v-container>
     </v-content>
@@ -53,11 +57,6 @@ export default {
         required: value => !!value || 'Required.',
         min: v => v.length >= 8 || 'Min 8 characters',
       }
-      //  rules: {
-      //   required: value => !!value || 'Required.',
-      //   min: v => v.length >= 8 || 'Min 8 characters',
-      //   emailMatch: () => ('The email and password you entered don\'t match'),
-      // },
     }
   },
 
@@ -76,6 +75,9 @@ export default {
       if (this.userEmail && this.password) {
         this.$router.push({ name: 'dashboard' });
       }
+    },
+    signup() {
+       this.$router.push({ name: 'signup' });
     }
   }
 }
