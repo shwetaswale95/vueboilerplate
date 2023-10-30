@@ -55,12 +55,12 @@ export default {
     drawer: true,
     links :[
       {icon: "mdi-view-dashboard", text:"Dashboard", route: "/"},
-      {icon: "mdi-information", text:"About", route: "/projects"},
+      {icon: "mdi-information", text:"About", route: "/about"},
     ],
     drpdownMenu :[
       {icon: "mdi-account", text:"Profile", route: "/"},
       {icon: "mdi-cog", text:"Settings", route: "/projects"},
-      {icon: "mdi-logout", text:"Logout", route: "/login"}
+      {icon: "mdi-logout", text:"Logout", route: "/about"}
     ]
   }),
 }
