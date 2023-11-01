@@ -3,9 +3,10 @@
     <v-app-bar dark app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title class="text-uppercase">
-      <span>Admin Template</span>
+      <span>{{$t('admin-template')}}</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
+      <Language/>
       <div id="menu-activator" class="cursor-pointer">
         <v-avatar>
           <img src="https://cdn.vuetifyjs.com/images/john.jpg"
@@ -13,6 +14,7 @@
         </v-avatar>
         <span class="mx-4"> username</span>
       </div>
+     
     <v-menu activator="#menu-activator">
       <v-list>
         <v-list-item
@@ -46,21 +48,23 @@
 </template>
 <script>
 import SvgIcon from '@jamescoyle/vue-icon';
+import Language from "@/components/core/Language";
 export default {
   components: {
-		SvgIcon
+		SvgIcon,
+    Language
 	},
   data: () => (
     {
     drawer: true,
     links :[
       {icon: "mdi-view-dashboard", text:"Dashboard", route: "/"},
-      {icon: "mdi-information", text:"About", route: "/about"},
+      {icon: "mdi-information", text:"card", route: "/about"},
     ],
     drpdownMenu :[
       {icon: "mdi-account", text:"Profile", route: "/"},
       {icon: "mdi-cog", text:"Settings", route: "/projects"},
-      {icon: "mdi-logout", text:"Logout", route: "/about"}
+      {icon: "mdi-logout", text:"Logout", route: "/login"}
     ]
   }),
 }
