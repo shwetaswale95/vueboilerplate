@@ -63,7 +63,7 @@ export default {
     ],
     drpdownMenu :[
       {icon: "mdi-account", text:"Profile", route: "/"},
-      {icon: "mdi-cog", text:"Settings", route: "/projects"},
+      {icon: "mdi-cog", text:"Settings", route: "/component"},
       {icon: "mdi-logout", text:"Logout", route: "/login"}
     ]
   }),
