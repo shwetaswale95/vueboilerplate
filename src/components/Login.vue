@@ -73,6 +73,7 @@ export default {
       }
 
       if (this.userEmail && this.password) {
+        localStorage.setItem('LoggedUser', this.userEmail);
         this.$router.push({ name: 'dashboard' });
       }
     },
