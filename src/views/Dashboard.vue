@@ -2,7 +2,7 @@
   <div style="margin-top:80px">
     <v-card>
     <v-card-title>
-      Customer Table
+    {{$t('customer-table')}}
       <v-spacer></v-spacer>
       <v-text-field
         v-model="search"

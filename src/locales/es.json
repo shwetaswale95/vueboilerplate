@@ -1,4 +1,5 @@
 {
   "admin-template": "plantilla de administrador",
-  "dashboard": "el salpicadero"
+  "dashboard": "el salpicadero",
+  "customer-table":"Mesa de clientes"
 }
