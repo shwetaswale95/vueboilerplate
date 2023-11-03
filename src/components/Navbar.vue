@@ -21,7 +21,7 @@
           v-for="(item, index) in drpdownMenu"
           :key="index"
           :value="index"
-          router :to="item.route"
+          @click="goToRoute(item.route)"
         >
         <template v-slot:prepend>
               <v-icon :icon="item.icon"></v-icon>
@@ -62,11 +62,22 @@ export default {
       {icon: "mdi-information", text:"card", route: "/about"},
     ],
     drpdownMenu :[
-      {icon: "mdi-account", text:"Profile", route: "/"},
-      {icon: "mdi-cog", text:"Settings", route: "/component"},
-      {icon: "mdi-logout", text:"Logout", route: "/login"}
+      {icon: "mdi-account", text:"Profile", route: "dashboard"},
+      {icon: "mdi-cog", text:"Component", route: "component"},
+      {icon: "mdi-logout", text:"Logout", route: "login" }
     ]
   }),
+  methods: {
+    goToRoute(link) {
+      if(link !== 'login') {
+        this.$router.push({ name: link });
+      } else {
+        localStorage.clear();
+        this.$router.push({ name: 'login' });
+      }
+       
+    }
+  },
 }
 </script>
 <style scoped>
