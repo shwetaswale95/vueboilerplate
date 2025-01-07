@@ -63,12 +63,17 @@ export default {
     },
   },
   mounted() {
-    // Connect to the backend (Socket.io server)
+    // Connect to the backend
     this.socket = io("http://localhost:3001");
 
-    // Listen for messages from the server
+    // Listen for incoming messages from the server
     this.socket.on("receive_message", (data) => {
-      this.messages.push(data); // Add the received message to the messages array
+      this.messages.push(data);
+    });
+
+    // Load all previous messages from the server
+    this.socket.on("load_messages", (messages) => {
+      this.messages = messages;
     });
   },
 };
