@@ -15,6 +15,9 @@
             <strong v-if="msg.user !== username">{{ msg.user }}:</strong>
             {{ msg.text }}
           </p>
+          <p class="message-timestamp">
+            {{ new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+          </p>
         </div>
       </div>
       <form @submit.prevent="sendMessage" class="chat-form">
@@ -48,6 +51,7 @@ export default {
       const messageData = {
         user: this.username,
         text: this.message,
+        timestamp: new Date().toISOString(),
       };
 
       // Emit the message to the server
