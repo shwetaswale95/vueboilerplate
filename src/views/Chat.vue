@@ -39,30 +39,40 @@ export default {
       socket: null,
       messages: [], // Store chat messages
       message: "", // Input field binding
-      username: `User${Math.floor(Math.random() * 1000)}`, // Generate random username
+      username: null, // Generate random username
     };
   },
   methods: {
     // Method to send the message
     sendMessage() {
-      if (!this.message.trim()) return; // Ignore empty messages
-
       const messageData = {
         user: this.username,
         text: this.message,
       };
-      console.log(this.username, "USERNAME");
+
       // Emit the message to the server
       this.socket.emit("send_message", messageData);
 
       // Add the message to the local messages list
       this.messages.push(messageData);
 
-      // Clear input field after sending the message
+      // Clear input field
       this.message = "";
     },
   },
   mounted() {
+    // Check if username exists in localStorage
+    const savedUsername = localStorage.getItem("username");
+
+    if (savedUsername) {
+      // Use saved username
+      this.username = savedUsername;
+    } else {
+      // Generate a new username and save it in localStorage
+      this.username = `User${Math.floor(Math.random() * 1000)}`;
+      localStorage.setItem("username", this.username);
+    }
+
     // Connect to the backend
     this.socket = io("http://localhost:3001");
 
