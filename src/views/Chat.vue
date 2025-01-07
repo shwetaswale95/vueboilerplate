@@ -11,12 +11,17 @@
             'message-received': msg.user !== username,
           }"
         >
-          <p>
+          <p class="message-text">
             <strong v-if="msg.user !== username">{{ msg.user }}:</strong>
             {{ msg.text }}
           </p>
           <p class="message-timestamp">
-            {{ new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+            {{
+              new Date(msg.timestamp).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            }}
           </p>
         </div>
       </div>
@@ -108,25 +113,42 @@ export default {
 }
 
 .messages {
-  max-height: 400px;
-  overflow-y: scroll;
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.message-sent,
+.message-received {
+  display: inline-block;
+  max-width: 70%; /* Limit message width */
+  margin: 5px 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  position: relative;
 }
 
 .message-sent {
-  text-align: right;
-  background-color: #d3ffd3;
-  padding: 5px 10px;
-  border-radius: 10px;
-  margin-bottom: 15px;
+  background-color: #d1ffc6; /* Light green */
+  align-self: flex-end; /* Align on the right */
+  color: #000;
 }
 
 .message-received {
-  text-align: left;
-  background-color: #f0f0f0;
-  padding: 5px 10px;
-  border-radius: 10px;
-  margin-bottom: 15px;
+  background-color: #f0f0f0; /* Light gray */
+  align-self: flex-start; /* Align on the left */
+  color: #000;
+}
+.message-text {
+  font-size: 14px;
+  margin: 0;
+}
+
+.message-timestamp {
+  font-size: 10px;
+  color: gray;
+  text-align: right;
+  margin-top: 4px;
 }
 
 .chat-form {
