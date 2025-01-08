@@ -2,28 +2,33 @@
   <div id="app" class="chat-div">
     <h1>Real-Time Chat App</h1>
     <div class="chat-container">
-      <div class="messages">
-        <div
-          v-for="(msg, index) in messages"
-          :key="index"
-          :class="{
-            'message-sent': msg.user === username,
-            'message-received': msg.user !== username,
-          }"
-        >
-          <p class="message-text">
-            <strong v-if="msg.user !== username">{{ msg.user }}:</strong>
-            {{ msg.text }}
-          </p>
-          <p class="message-timestamp">
-            {{
-              new Date(msg.timestamp).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            }}
-          </p>
-        </div>
+      <div class="messages" ref="messagesContainer">
+        <template v-for="(msg, index) in messages" :key="index">
+          <!-- Date Separator -->
+          <div v-if="isNewDate(index)" class="date-separator">
+            {{ formatDate(msg.timestamp) }}
+          </div>
+          <!-- Chat Message -->
+          <div
+            :class="{
+              'message-sent': msg.user === username,
+              'message-received': msg.user !== username,
+            }"
+          >
+            <p class="message-text">
+              <strong v-if="msg.user !== username">{{ msg.user }}:</strong>
+              {{ msg.text }}
+            </p>
+            <p class="message-timestamp">
+              {{
+                new Date(msg.timestamp).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              }}
+            </p>
+          </div>
+        </template>
       </div>
       <form @submit.prevent="sendMessage" class="chat-form">
         <input
@@ -67,20 +72,37 @@ export default {
 
       // Clear input field
       this.message = "";
+      this.scrollToBottom();
+    },
+    isNewDate(index) {
+      if (index === 0) return true;
+
+      const prevDate = new Date(this.messages[index - 1].timestamp).toDateString();
+      const currDate = new Date(this.messages[index].timestamp).toDateString();
+
+      return prevDate !== currDate;
+    },
+    formatDate(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleDateString(undefined, {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    },
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const container = this.$refs.messagesContainer;
+        container.scrollTop = container.scrollHeight;
+      });
     },
   },
   mounted() {
     // Check if username exists in localStorage
     const savedUsername = localStorage.getItem("username");
-
-    if (savedUsername) {
-      // Use saved username
-      this.username = savedUsername;
-    } else {
-      // Generate a new username and save it in localStorage
-      this.username = `User${Math.floor(Math.random() * 1000)}`;
-      localStorage.setItem("username", this.username);
-    }
+    this.username = savedUsername || `User${Math.floor(Math.random() * 1000)}`;
+    localStorage.setItem("username", this.username);
 
     // Connect to the backend
     this.socket = io("http://localhost:3001");
@@ -88,11 +110,13 @@ export default {
     // Listen for incoming messages from the server
     this.socket.on("receive_message", (data) => {
       this.messages.push(data);
+      this.scrollToBottom();
     });
 
     // Load all previous messages from the server
     this.socket.on("load_messages", (messages) => {
       this.messages = messages;
+      this.scrollToBottom();
     });
   },
 };
@@ -116,12 +140,17 @@ export default {
   display: flex;
   flex-direction: column;
   padding: 10px;
+  height: 400px; /* Set a fixed height */
+  overflow-y: auto; /* Enable scrolling */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #ffffff;
 }
 
 .message-sent,
 .message-received {
   display: inline-block;
-  max-width: 70%; /* Limit message width */
+  max-width: 70%;
   margin: 5px 0;
   padding: 8px 12px;
   border-radius: 12px;
@@ -174,5 +203,13 @@ export default {
 
 .chat-form button:hover {
   background-color: #45a049;
+}
+
+.date-separator {
+  text-align: center;
+  margin: 10px 0;
+  color: gray;
+  font-size: 12px;
+  font-weight: bold;
 }
 </style>
