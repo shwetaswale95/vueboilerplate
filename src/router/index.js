@@ -5,6 +5,7 @@ import Chat from "../views/Chat.vue";
 import Component from "../views/Component.vue";
 import Login from "../components/Login.vue";
 import Signup from "../components/Signup.vue";
+import Video from "../views/Video.vue";
 
 
 function guardMyroute(to, from, next)
@@ -43,6 +44,12 @@ const routes = [
     name: "chat",
     beforeEnter : guardMyroute,
     component: Chat,
+  },
+  {
+    path: "/video",
+    name: "video",
+    beforeEnter : guardMyroute,
+    component: Video,
   },
   {
     path: "/component",

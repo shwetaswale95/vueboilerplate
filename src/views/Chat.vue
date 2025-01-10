@@ -38,21 +38,35 @@
           required
         />
         <button type="submit">Send</button>
+        <button type="button" @click="startCall">Call</button>
       </form>
     </div>
+
+    <!-- Video Call Component -->
+    <Video
+      v-if="isCalling"
+      :username="username"
+      :socket="socket"
+      @endCall="endCall"
+    />
   </div>
 </template>
 
 <script>
 import { io } from "socket.io-client";
+import Video from "./Video.vue";
 
 export default {
+  components: {
+    Video,
+  },
   data() {
     return {
       socket: null,
       messages: [], // Store chat messages
       message: "", // Input field binding
       username: null, // Generate random username
+      isCalling: false, // Track if a call is ongoing
     };
   },
   methods: {
@@ -73,6 +87,21 @@ export default {
       // Clear input field
       this.message = "";
       this.scrollToBottom();
+    },
+    startCall() {
+      // You can replace the target user with the user you want to call
+      const targetUsername = 'targetUser'; // Hardcoded for testing, replace dynamically as needed
+      // Send call offer
+      this.socket.emit('call-user', {
+        to: targetUsername,
+        offer: 'offerData' // You can replace this with your offer data
+      });
+
+      // Show the video call component
+      this.isCalling = true;
+    },
+    endCall() {
+      this.isCalling = false; // Hide the video call component
     },
     isNewDate(index) {
       if (index === 0) return true;
@@ -145,6 +174,7 @@ export default {
   border: 1px solid #ccc;
   border-radius: 8px;
   background-color: #ffffff;
+  margin-bottom: 20px;
 }
 
 .message-sent,
