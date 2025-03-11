@@ -1,179 +1,152 @@
 <template>
-  <div style="margin-top: 100px;">
+  <div class="video-call" style="margin-top: 100px; text-align: center;">
     <h1>Video Call</h1>
-    <div v-if="incomingCall">
-      <p>You have an incoming call from {{ callerId }}</p>
-      <button @click="acceptCall">Accept</button>
-      <button @click="rejectCall">Reject</button>
+    <div id="videos">
+      <v-card class="video-card">
+        <video ref="localVideo" autoplay muted></video>
+      </v-card>
+      <v-card class="video-card">
+        <video ref="remoteVideo" autoplay></video>
+      </v-card>
     </div>
-    <div v-else>
-      <video id="localVideo" autoplay playsinline></video>
-      <video id="remoteVideo" autoplay playsinline></video>
+    <div class="button-group">
+      <v-btn rounded color="primary" @click="startCall">
+        <v-icon left>mdi-phone</v-icon>
+        Start Call
+      </v-btn>
+      <v-btn rounded color="success" @click="answerCall">
+        <v-icon left>mdi-phone-incoming</v-icon>
+        Answer Call
+      </v-btn>
+      <v-btn rounded color="error" @click="hangUp">
+        <v-icon left>mdi-phone-hangup</v-icon>
+        Hang Up
+      </v-btn>
     </div>
-    <div>
-      <label for="recipientUserId">Recipient User ID:</label>
-      <input v-model="recipientUserId" id="recipientUserId" placeholder="Enter User ID" />
-      <button @click="startCall">Start Call</button>
-    </div>
-    <p>Your User ID: {{ userId }}</p>
   </div>
 </template>
 
 <script>
+import io from "socket.io-client";
+
 export default {
   data() {
     return {
+      socket: null,
+      localStream: null,
       peerConnection: null,
-      recipientUserId: "", // Target user ID for the call
-      incomingCall: false, // Show incoming call UI
-      callerId: null, // ID of the caller
-      userId: null, // Current user's unique ID
+      remoteStream: null,
+      userId: Math.random().toString(36).substring(7),
+      isCallActive: false,
+      isReceivingCall: false,
     };
-  },
-  mounted() {
-    // Assign a unique ID to the current browser session
-    if (!localStorage.getItem("userId")) {
-      const userId = `user_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem("userId", userId);
-    }
-
-    // Register the user ID with the server
-    this.userId = localStorage.getItem("userId");
-    this.$socket.emit("register_user", this.userId);  // Change to 'register_user'
-
-    // Log socket events for debugging
-    this.$socket.on("connect", () => {
-      console.log("Socket connected:", this.$socket.id);
-    });
-
-    this.$socket.on("disconnect", () => {
-      console.log("Socket disconnected.");
-    });
-
-    this.$socket.on("call-offer", this.handleCallOffer);
-    this.$socket.on("call-answer", this.handleCallAnswer);
-    this.$socket.on("ice-candidate", this.handleIceCandidate);
-    this.$socket.on("call-reject", this.handleCallReject);
   },
   methods: {
     async startCall() {
-      try {
-        console.log("Starting call...");
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        console.log("Local stream created:", stream);
-        document.getElementById("localVideo").srcObject = stream;
+      this.peerConnection = new RTCPeerConnection();
+      this.peerConnection.onicecandidate = this.handleICECandidate;
+      this.peerConnection.ontrack = this.handleTrackEvent;
 
-        this.peerConnection = new RTCPeerConnection();
-        console.log("Peer connection created:", this.peerConnection);
+      this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      this.$refs.localVideo.srcObject = this.localStream;
+      this.localStream.getTracks().forEach(track => {
+        this.peerConnection.addTrack(track, this.localStream);
+      });
 
-        stream.getTracks().forEach((track) => this.peerConnection.addTrack(track, stream));
+      const offer = await this.peerConnection.createOffer();
+      await this.peerConnection.setLocalDescription(offer);
 
-        this.peerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            console.log('New ICE candidate:', event.candidate);
-            this.$socket.emit("ice-candidate", {
-              to: this.recipientUserId,
-              candidate: event.candidate,
-            });
-          }
-        };
+      this.socket.emit("call-offer", { from: this.userId, to: "user2", offer });
+    },
+    async answerCall() {
+      this.peerConnection = new RTCPeerConnection();
+      this.peerConnection.onicecandidate = this.handleICECandidate;
+      this.peerConnection.ontrack = this.handleTrackEvent;
 
-        this.peerConnection.ontrack = (event) => {
-          console.log('Received track:', event.streams);
-          document.getElementById("remoteVideo").srcObject = event.streams[0];
-        };
+      this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      this.$refs.localVideo.srcObject = this.localStream;
+      this.localStream.getTracks().forEach(track => {
+        this.peerConnection.addTrack(track, this.localStream);
+      });
 
-        const offer = await this.peerConnection.createOffer();
-        await this.peerConnection.setLocalDescription(offer);
+      const answer = await this.peerConnection.createAnswer();
+      await this.peerConnection.setLocalDescription(answer);
 
-        console.log("Offer created:", offer);
-        this.$socket.emit("call-offer", {
-          from: this.userId,
-          to: this.recipientUserId,
-          offer,
-        });
-      } catch (error) {
-        console.error("Error accessing media devices:", error);
-        alert("Could not access your camera or microphone. Please close other tabs or apps using these devices.");
+      this.socket.emit("call-answer", { from: this.userId, to: "user2", answer });
+    },
+    handleTrackEvent(event) {
+      this.remoteStream = event.streams[0];
+      this.$refs.remoteVideo.srcObject = this.remoteStream;
+    },
+    handleICECandidate(event) {
+      if (event.candidate) {
+        this.socket.emit("ice-candidate", { to: "user2", candidate: event.candidate });
       }
     },
-    handleCallOffer(data) {
-      console.log("Received call offer from:", data.from);
-      this.incomingCall = true;
-      this.callerId = data.from;
-    },
-    async acceptCall() {
-      this.incomingCall = false;
-      try {
-        console.log("Accepting call...");
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        console.log("Local stream created:", stream);
-        document.getElementById("localVideo").srcObject = stream;
-
-        this.peerConnection = new RTCPeerConnection();
-        console.log("Peer connection created:", this.peerConnection);
-
-        stream.getTracks().forEach((track) => this.peerConnection.addTrack(track, stream));
-
-        this.peerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            console.log('New ICE candidate:', event.candidate);
-            this.$socket.emit("ice-candidate", {
-              to: this.callerId,
-              candidate: event.candidate,
-            });
-          }
-        };
-
-        this.peerConnection.ontrack = (event) => {
-          console.log('Received track:', event.streams);
-          document.getElementById("remoteVideo").srcObject = event.streams[0];
-        };
-
-        await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-        const answer = await this.peerConnection.createAnswer();
-        await this.peerConnection.setLocalDescription(answer);
-
-        console.log("Answer created:", answer);
-        this.$socket.emit("call-answer", {
-          to: this.callerId,
-          answer,
-        });
-      } catch (error) {
-        console.error("Error accepting call:", error);
-        alert("Could not access your camera or microphone. Please close other tabs or apps using these devices.");
-      }
-    },
-    rejectCall() {
-      console.log("Rejecting call...");
-      this.$socket.emit("call-reject", { to: this.callerId });
-      this.incomingCall = false;
-      this.callerId = null;
-    },
-    async handleCallAnswer(data) {
-      console.log("Received call answer.");
-      await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-    },
-    async handleIceCandidate(data) {
-      if (data.candidate) {
-        console.log("Adding ICE candidate:", data.candidate);
-        await this.peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-      }
-    },
-    handleCallReject() {
-      console.log("Call rejected.");
-      alert("Call was rejected.");
+    hangUp() {
       this.peerConnection.close();
       this.peerConnection = null;
+      this.localStream.getTracks().forEach(track => track.stop());
+      this.localStream = null;
+      this.isCallActive = false;
+      this.isReceivingCall = false;
     },
+  },
+  mounted() {
+    this.socket = io("http://localhost:3001");
+    this.socket.emit("register", this.userId);
+
+    this.socket.on("call-offer", async (data) => {
+      if (!this.isCallActive) {
+        this.isReceivingCall = true;
+        const offer = data.offer;
+        this.peerConnection = new RTCPeerConnection();
+        this.peerConnection.onicecandidate = this.handleICECandidate;
+        this.peerConnection.ontrack = this.handleTrackEvent;
+
+        this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        this.$refs.localVideo.srcObject = this.localStream;
+        this.localStream.getTracks().forEach((track) => {
+          this.peerConnection.addTrack(track, this.localStream);
+        });
+        await this.peerConnection.setRemoteDescription(offer);
+      }
+    });
+    
+    this.socket.on("call-answer", async (data) => {
+      const answer = data.answer;
+      await this.peerConnection.setRemoteDescription(answer);
+      this.isReceivingCall = false;
+      this.isCallActive = true;
+    });
+    
+    this.socket.on("ice-candidate", (data) => {
+      const candidate = new RTCIceCandidate(data.candidate);
+      this.peerConnection.addIceCandidate(candidate);
+    });
   },
 };
 </script>
 
-<style>
+<style scoped>
+#videos {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+.video-card {
+  padding: 10px;
+  background: #000;
+  border-radius: 10px;
+}
 video {
-  width: 300px;
-  height: 200px;
-  border: 1px solid black;
+  width: 100%;
+  border-radius: 10px;
+}
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 </style>
