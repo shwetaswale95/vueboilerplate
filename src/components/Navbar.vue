@@ -64,6 +64,7 @@ export default {
       { icon: "mdi-view-dashboard", text: "Dashboard", route: "/" },
       { icon: "mdi-information", text: "card", route: "/about" },
       { icon: "mdi-information", text: "Chat", route: "/chat" },
+      { icon: "mdi-information", text: "Video", route: "/video" },
     ],
     drpdownMenu: [
       { icon: "mdi-account", text: "Profile", route: "dashboard" },
